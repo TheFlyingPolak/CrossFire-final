@@ -119,7 +119,8 @@ void runGame(struct slot **board, struct player players[], int playerCount){
 }
 
 /*	Function to accommodate movement to an adjacent slot  */
-void move(struct slot **board, struct player *name){
+void move(struct slot **board, struct player *name)
+{
 	bool up = false, right = false, down = false, left = false, loop = true;
 	int choice;
 	
@@ -135,20 +136,23 @@ void move(struct slot **board, struct player *name){
 
 	puts("You may move in the following directions:");
 	if (down == true)
-		puts("[2] - down");
+		puts("[2] - Down");
 	if (left == true)
-		puts("[4] - left");
+		puts("[4] - Left");
 	if (right == true)
-		puts("[6] - right");
+		puts("[6] - Right");
 	if (up == true)
-		puts("[8] - up");
+		puts("[8] - Up");
 	
 	/*	Ask the user to choose direction  */
-	while (loop){
+	while (loop)
+	{
 		scanf("%d", &choice);
-		switch (choice){
+		switch (choice)
+		{
 			case 2:	// Move down
-				if (down == true){
+				if (down == true)
+				{
 					(*name).position = (*name).position->down;
 					printf("Moved down to position (%d, %d)\n", (*name).position->row, (*name).position->column);
 					loop = false;
@@ -157,7 +161,8 @@ void move(struct slot **board, struct player *name){
 					puts("Cannot move down");
 				break;
 			case 4:	// Move left
-				if (left == true){
+				if (left == true)
+				{
 					(*name).position = (*name).position->left;
 					printf("Moved left to position (%d, %d)\n", (*name).position->row, (*name).position->column);
 					loop = false;
@@ -166,7 +171,8 @@ void move(struct slot **board, struct player *name){
 					puts("Cannot move left");
 				break;
 			case 6:	// Move right
-				if (right == true){
+				if (right == true)
+				{
 					(*name).position = (*name).position->right;
 					printf("Moved right to position (%d, %d)\n", (*name).position->row, (*name).position->column);
 					loop = false;
@@ -175,7 +181,8 @@ void move(struct slot **board, struct player *name){
 					puts("Cannot move right");
 				break;
 			case 8:	// Move up
-				if (up == true){
+				if (up == true)
+				{
 					(*name).position = (*name).position->up;
 					printf("Moved up to position (%d, %d)\n", (*name).position->row, (*name).position->column);
 					loop = false;
@@ -195,9 +202,12 @@ void move(struct slot **board, struct player *name){
 void attack(struct slot **board, struct player players[], int playerCount, int counter)
 {
 	int attack, attack01;
-	int i;
+	int i, j, k;
 	int canAttack[6];
 	int count = 0;
+	int dist;
+	int row, column;
+
 
 	printf("Enter the type of attack you wish to perform:\n");
 	printf("[1] - Near Attack\n");
@@ -254,7 +264,7 @@ void attack(struct slot **board, struct player players[], int playerCount, int c
 			else if( count>1)
 				{
 					printf("Who would you like to attack?\n");
-					for(i=0; i<count; i++)
+					for(i=0; i<=count; i++)
 					{
 						printf("[%d] - %s\n", i+1, players[ canAttack[i] ].name );
 					}
@@ -284,8 +294,82 @@ void attack(struct slot **board, struct player players[], int playerCount, int c
 					printf("Attacked %s.\n", players[ canAttack[0] ].name );
 				}
 			break;
-	//	case 2:		// Distant attack
-	//		break;
+		case 2:		// Distant attack
+			
+			for ( i=0; i<7; i++)		// Code for finding players that are eligable to be attacked. If so, how many there are and who they are.
+			{
+				for ( j=0; j<7; j++)
+				{
+					row = (players[counter].position->row - i);		
+					column = (players[counter].position->column - j);
+					
+					if ( row<0 )		// Ensures the the calculated distance is free of error by keeping both differences positive.
+					{
+						row = (0-1)*(players[counter].position->row - i);
+					}
+					if ( column<0 )
+					{
+						column = (0-1)*(players[counter].position->column - j);
+					}
+					
+					dist = row + column ;
+					
+					if ( dist>1 && dist<5)
+					{
+						for ( k=0; k<playerCount; k++)
+						{
+							if ( players[k].position == &board [i] [j] )
+							{
+								canAttack[count] = k;
+								count++;
+							}
+						}
+					}
+				}
+			}
+			
+			if( count > 1)		// Code for the attacks themselves.
+			{
+				printf("Who would you like to attack?\n");
+				for ( i=0; i<=count; i++)
+				{
+					printf("[%d] - %s\n", i+1, players[canAttack[i]].name);
+				}
+//////////////////////////////////////////////////////
+				scanf("%d", &attack01); // Crashes here!
+//////////////////////////////////////////////////////			
+				if ( players[canAttack[attack01-1]].dexterity >= players[counter].dexterity)
+				{
+					players[canAttack[attack01-1]].life = players[canAttack[attack01-1]].life;
+				}
+				else if ( players[counter].dexterity > players[canAttack[attack01-1]].dexterity )
+				{
+					players[canAttack[attack01-1]].life = players[canAttack[attack01-1]].life - 0.3*(players[counter].strength);
+				}
+				
+				printf("Attacked %s.\n", players[canAttack[attack01-1]].name);
+				
+			}
+			else if ( count == 1)
+			{
+				if ( players[canAttack[0]].dexterity >= players[counter].dexterity)
+				{
+					players[canAttack[0]].life = players[canAttack[0]].life;
+				}
+				else if ( players[counter].dexterity > players[canAttack[0]].dexterity )
+				{
+					players[canAttack[0]].life = players[canAttack[0]].life - 0.3*(players[counter].strength);
+				}
+				
+				printf("Attacked %s.\n", players[canAttack[0]].name);	
+				
+			}
+			else if ( count == 0)
+			{
+				printf("There are no players in range!\n");
+			}
+			
+			break;
 		case 3:		// Magic attack
 		
 		printf("Who would you like to attack?\n");
@@ -311,6 +395,7 @@ void attack(struct slot **board, struct player players[], int playerCount, int c
 			}
 			break;
 	}
+	getchar();
 }
 
 /*	Function to ask the user to press ENTER to continue  */
